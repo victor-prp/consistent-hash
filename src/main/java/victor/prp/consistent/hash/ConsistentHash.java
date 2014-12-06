@@ -1,21 +1,18 @@
-package victor.prp.consistant.hash;
-
-import javafx.collections.transformation.SortedList;
+package victor.prp.consistent.hash;
 
 import java.util.*;
-import java.util.stream.IntStream;
 
 import static java.util.stream.IntStream.rangeClosed;
 
 /**
  * @author victorp
  */
-public class ConsHash {
+public class ConsistentHash {
     private int bucketsCount;
     private SortedMap<Long,String> virtualToRealNode = new TreeMap<>();
     private HashFunction hashFunction = DefaultHashFunction.KETAMA_HASH;
 
-    public ConsHash(int bucketsCount, Set<String> nodes) {
+    public ConsistentHash(int bucketsCount, Set<String> nodes) {
         this.bucketsCount = bucketsCount;
         nodes.forEach(this::addNode);
     }

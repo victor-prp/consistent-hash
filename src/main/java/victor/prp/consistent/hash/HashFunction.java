@@ -1,4 +1,4 @@
-package victor.prp.consistant.hash;
+package victor.prp.consistent.hash;
 
 import java.util.function.Function;
 import java.util.function.IntFunction;

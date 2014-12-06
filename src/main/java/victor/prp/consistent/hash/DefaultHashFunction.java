@@ -1,4 +1,4 @@
-package victor.prp.consistant.hash;
+package victor.prp.consistent.hash;
 
 
 
