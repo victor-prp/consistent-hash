@@ -7,6 +7,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 /**
  * @author victorp
@@ -55,14 +56,36 @@ public class ConsistentHashTestUtil {
         return node2keys;
     }
 
-    private static int addNodes(ConsistentHash consistentHash,Set<String> nodes) {
+
+    private static int addNodes(ConsistentHash consistentHash,Stream<String> nodes) {
         AtomicInteger allCollisionsCount = new AtomicInteger(0);
-        nodes.forEach(node->{
-            int collisionsCount = consistentHash.addNode(node);
-            allCollisionsCount.addAndGet(collisionsCount);
-        });
+        nodes
+            .forEach(node -> {
+                int collisionsCount = consistentHash.addNode(node);
+                allCollisionsCount.addAndGet(collisionsCount);
+            });
 
         return allCollisionsCount.get();
+    }
+
+
+    public static int addNodesRandomly(ConsistentHash consistentHash, Set<String> nodes) {
+        String[] nodesArray = new String[nodes.size()];
+        final Random random = new Random();
+        nodes.forEach(node -> addNodeToRandomLocation(nodesArray, random, node));
+        return addNodes(consistentHash,Arrays.stream(nodesArray));
+
+    }
+
+    private static void addNodeToRandomLocation(String[] nodesArray, Random random, String node) {
+        boolean added = false;
+        while (!added){
+            int index = random.nextInt(nodesArray.length);
+            if (nodesArray[index] == null){
+                nodesArray[index] = node;
+                added = true;
+            }
+        }
     }
 
     public static Map<String, Set<String>> initNodes2Keys(Set<String> nodes) {
@@ -99,9 +122,10 @@ public class ConsistentHashTestUtil {
 
     public  static ConsistentHash initConsistentHash(int bucketCount, Set<String> nodes){
         ConsistentHash consistentHash = new ConsistentHash(bucketCount);
-        int collisionCount = addNodes(consistentHash,nodes);
+        int collisionCount = addNodes(consistentHash, nodes.stream());
         System.out.println("ConsistentHash was created with " + nodes.size()+ " nodes. Collisions during creation: " + collisionCount);
         return consistentHash;
-
     }
+
+
 }
