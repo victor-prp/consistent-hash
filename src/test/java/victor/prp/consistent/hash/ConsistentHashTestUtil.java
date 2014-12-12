@@ -26,33 +26,31 @@ public class ConsistentHashTestUtil {
         return movedKeysCount.get();
     }
 
-    public static Map<String, AtomicInteger> initNodes(Set<String> nodes, String... moreNodes) {
+    public static Set<String> initNodes(Set<String> nodes, String... moreNodes) {
         Set<String> nodesToInit = new HashSet<>(nodes);
         nodesToInit.addAll(Arrays.asList(moreNodes));
-        return nodesToInit.stream().collect(Collectors.toMap(node -> node, node -> new AtomicInteger()));
+        return nodesToInit;
     }
 
-    public static Map<String,Set<String>> simulate(int bucketCount, Map<String, AtomicInteger> nodes, Set<String> keys) {
-        final Map<String,Set<String>> node2keys = initNodes2Keys(nodes.keySet());
-        ConsistentHash consistentHash = new ConsistentHash(bucketCount,nodes.keySet());
+    public static Map<String,Set<String>> simulate(int bucketCount, Set<String> nodes, Set<String> keys) {
+        final Map<String,Set<String>> node2keys = initNodes2Keys(nodes);
+        ConsistentHash consistentHash = new ConsistentHash(bucketCount,nodes);
 
         keys.stream()
                 .forEach(key -> {
                     String node = consistentHash.calculateNode(key);
-                    Assert.assertTrue("algo returned non existing node", nodes.containsKey(node));
-                    nodes.get(node).incrementAndGet();
+                    Assert.assertTrue("algo returned non existing node", nodes.contains(node));
                     node2keys.get(node).add(key);
                 });
 
-        nodes.forEach((node,count)-> {
-            System.out.println("node: " + node + " count: " + count.get() + " key size: " + node2keys.get(node).size());
-
+        nodes.forEach((node)-> {
+            System.out.println("node: " + node + " keys count: " + node2keys.get(node).size());
         });
 
-        int sum = nodes.values()
-                .stream()
-                .reduce((l, r) -> new AtomicInteger(l.get() + r.get())).get().get();
-        System.out.println("sum: " + sum);
+        AtomicInteger sum = new AtomicInteger();
+        node2keys.values().forEach(keysSet -> sum.addAndGet(keysSet.size()));
+
+        System.out.println("sum: " + sum.get());
         return node2keys;
     }
 
@@ -78,13 +76,13 @@ public class ConsistentHashTestUtil {
 
 
 
-    public  static Map<String,AtomicInteger> initNodesRandomly(int nodesCount) {
+    public  static Set<String> initNodesRandomly(int nodesCount) {
         final String nodePrototype = "node-";
-        final Map<String,AtomicInteger> result = new HashMap<>();
+        final Set<String>result = new HashSet<>();
         final Random random = new Random();
         IntStream.rangeClosed(1,nodesCount)
                 .map(n -> random.nextInt())
-                .forEach(r -> result.put(nodePrototype + r, new AtomicInteger(0)));
+                .forEach(sequence -> result.add(nodePrototype+sequence));
         return result;
     }
 }
