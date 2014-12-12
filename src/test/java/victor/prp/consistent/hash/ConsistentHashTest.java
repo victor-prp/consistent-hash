@@ -11,7 +11,7 @@ import java.util.*;
  */
 public class ConsistentHashTest {
     private static final int NODES_COUNT = 10;
-    private static final int BUCKETS_COUNT =  30000;
+    private static final int BUCKETS_COUNT =  10000;
     private static final int KEYS_COUNT = 1000000;
 
     @Test
@@ -20,8 +20,10 @@ public class ConsistentHashTest {
 
         final Set<String> keys = createRandomKeys(KEYS_COUNT);
         final Set<String> nodes = initNodesRandomly(NODES_COUNT);
+        ConsistentHash consistentHash = initConsistentHash(BUCKETS_COUNT,nodes);
 
-        Map<String,Set<String>> node2Keys = simulate(BUCKETS_COUNT,nodes,keys);
+
+        Map<String,Set<String>> node2Keys = simulate(consistentHash,nodes,keys);
 
         int expectedCountPerNode = KEYS_COUNT / NODES_COUNT;
         node2Keys.forEach((node, keysSet) -> {
@@ -43,14 +45,16 @@ public class ConsistentHashTest {
          * Simulate with random nodes and random keys
          */
         final Set<String> nodesPhase1 = initNodesRandomly(NODES_COUNT);
-        Map<String,Set<String>> nodes2KeysPhase1 = simulate(BUCKETS_COUNT, nodesPhase1, keys);
+        ConsistentHash consistentHashPhase1 = initConsistentHash(BUCKETS_COUNT,nodesPhase1);
+        Map<String,Set<String>> nodes2KeysPhase1 = simulate(consistentHashPhase1, nodesPhase1, keys);
 
         /**
          * Phase 2
          * Simulate with same nodes from phase 1 + "new-node" and with same keys from phase 1
          */
         final Set<String> nodesPhase2 = initNodes(nodesPhase1,"new-node");
-        Map<String,Set<String>> nodes2KeysPhase2 = simulate(BUCKETS_COUNT, nodesPhase2, keys);
+        ConsistentHash consistentHashPhase2 = initConsistentHash(BUCKETS_COUNT,nodesPhase2);
+        Map<String,Set<String>> nodes2KeysPhase2 = simulate(consistentHashPhase2, nodesPhase2, keys);
 
         /**
          * Phase 3
@@ -74,14 +78,17 @@ public class ConsistentHashTest {
          * Simulate with random nodes new-node" and random keys
          */
         final Set<String> nodesPhase1 = initNodes(nodes, "new-node");
-        Map<String,Set<String>> nodes2KeysPhase1 = simulate(BUCKETS_COUNT, nodesPhase1, keys);
+        ConsistentHash consistentHashPhase1 = initConsistentHash(BUCKETS_COUNT,nodesPhase1);
+        Map<String,Set<String>> nodes2KeysPhase1 = simulate(consistentHashPhase1, nodesPhase1, keys);
 
         /**
          * Phase 2
          * Simulate with same nodes from phase 1 - "new-node" and with same keys from phase 1
          */
         final Set<String> nodesPhase2 = initNodes(nodes);
-        Map<String,Set<String>> nodes2KeysPhase2 = simulate(BUCKETS_COUNT, nodesPhase2, keys);
+        ConsistentHash consistentHashPhase2 = initConsistentHash(BUCKETS_COUNT,nodesPhase2);
+
+        Map<String,Set<String>> nodes2KeysPhase2 = simulate(consistentHashPhase2, nodesPhase2, keys);
 
         /**
          * Phase 3

@@ -12,6 +12,8 @@ import java.util.stream.IntStream;
  * @author victorp
  */
 public class ConsistentHashTestUtil {
+    private ConsistentHashTestUtil() {
+    }
 
     public static long calculatedMovedKeys(Map<String, Set<String>> nodes2KeysLeft, Map<String, Set<String>> nodes2KeysRight) {
         AtomicLong movedKeysCount = new AtomicLong(0);
@@ -32,9 +34,8 @@ public class ConsistentHashTestUtil {
         return nodesToInit;
     }
 
-    public static Map<String,Set<String>> simulate(int bucketCount, Set<String> nodes, Set<String> keys) {
+    public static Map<String,Set<String>> simulate(ConsistentHash consistentHash, Set<String> nodes, Set<String> keys) {
         final Map<String,Set<String>> node2keys = initNodes2Keys(nodes);
-        ConsistentHash consistentHash = new ConsistentHash(bucketCount,nodes);
 
         keys.stream()
                 .forEach(key -> {
@@ -52,6 +53,16 @@ public class ConsistentHashTestUtil {
 
         System.out.println("sum: " + sum.get());
         return node2keys;
+    }
+
+    private static int addNodes(ConsistentHash consistentHash,Set<String> nodes) {
+        AtomicInteger allCollisionsCount = new AtomicInteger(0);
+        nodes.forEach(node->{
+            int collisionsCount = consistentHash.addNode(node);
+            allCollisionsCount.addAndGet(collisionsCount);
+        });
+
+        return allCollisionsCount.get();
     }
 
     public static Map<String, Set<String>> initNodes2Keys(Set<String> nodes) {
@@ -84,5 +95,13 @@ public class ConsistentHashTestUtil {
                 .map(n -> random.nextInt())
                 .forEach(sequence -> result.add(nodePrototype+sequence));
         return result;
+    }
+
+    public  static ConsistentHash initConsistentHash(int bucketCount, Set<String> nodes){
+        ConsistentHash consistentHash = new ConsistentHash(bucketCount);
+        int collisionCount = addNodes(consistentHash,nodes);
+        System.out.println("ConsistentHash was created with " + nodes.size()+ " nodes. Collisions during creation: " + collisionCount);
+        return consistentHash;
+
     }
 }

@@ -1,6 +1,7 @@
 package victor.prp.consistent.hash;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.util.stream.IntStream.rangeClosed;
 
@@ -12,16 +13,26 @@ public class ConsistentHash {
     private SortedMap<Long,String> virtualToRealNode = new TreeMap<>();
     private HashFunction hashFunction = DefaultHashFunction.KETAMA_HASH;
 
+    public ConsistentHash(int bucketsCount, String... nodes) {
+        this(bucketsCount,CollectionsUtil.asSet(nodes));
+    }
+
     public ConsistentHash(int bucketsCount, Set<String> nodes) {
         this.bucketsCount = bucketsCount;
         nodes.forEach(this::addNode);
     }
 
-    public void addNode(String nodeName){
+
+    public int addNode(String nodeName){
+        AtomicInteger collisionsCount = new AtomicInteger();
         rangeClosed(0, bucketsCount)
                 .forEach(bucketNumber -> {
-                    virtualToRealNode.put(hash((nodeName + bucketNumber)), nodeName);
+                    String previousMapping = virtualToRealNode.put(hash((nodeName + bucketNumber)), nodeName);
+                    if (previousMapping != null){
+                        collisionsCount.incrementAndGet();
+                    }
                 });
+        return collisionsCount.get();
     }
 
     public void removeNode(String nodeName){
