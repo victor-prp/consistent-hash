@@ -1,0 +1,20 @@
+*.class
+*.log
+
+#maven specific
+target/
+
+#Intellij
+.settings/
+.idea/
+*.iml
+*.iws
+
+#Ubuntu
+.DS_Store
+
+#SVN
+.svn/
+
+
+.metadata/
