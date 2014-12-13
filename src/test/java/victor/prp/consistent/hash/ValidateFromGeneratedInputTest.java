@@ -16,7 +16,7 @@ import static victor.prp.consistent.hash.ConsistentHashTestUtil.*;
 public class ValidateFromGeneratedInputTest {
     private static final int MIN_EXPECTED_COLLISIONS = 30;
 
-    private static final String FILE_NAME = "victor/prp/consistent/hash/node2Keys-00.txt";
+    private static final String FILE_NAME = "victor/prp/consistent/hash/node2Keys-00.xml";
     private static final int NODES_COUNT = 100;
     private static final int BUCKETS_COUNT = 10000;
     private static final int KEYS_COUNT = 1000000;

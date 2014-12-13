@@ -11,7 +11,7 @@ import static java.util.stream.IntStream.rangeClosed;
 public class ConsistentHash {
     private int bucketsCount;
     private SortedMap<Long,String> virtualToRealNode = new TreeMap<>();
-    private HashFunction hashFunction = DefaultHashFunction.KETAMA_HASH;
+    private HashFunction hashFunction = MD5Hash.INSTANCE;
 
     public ConsistentHash(int bucketsCount, String... nodes) {
         this(bucketsCount,CollectionsUtil.asSet(nodes));
