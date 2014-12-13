@@ -27,7 +27,7 @@ public class ConsistentHash {
         AtomicInteger collisionsCount = new AtomicInteger();
         rangeClosed(0, bucketsCount)
                 .forEach(bucketNumber -> {
-                    long hash = hash((nodeName + bucketNumber));
+                    long hash = virtualNode(nodeName, bucketNumber);
                     SortedSet<String> previousMapping = virtualToRealNode.get(hash);
                     if (previousMapping == null){
                         SortedSet<String> newMapping = new TreeSet<>();
@@ -41,11 +41,23 @@ public class ConsistentHash {
         return collisionsCount.get();
     }
 
+    private static String virtualNodeName(String nodeName, int bucketNumber) {
+        return nodeName + ":"+ bucketNumber;
+    }
+
     public void removeNode(String nodeName){
         rangeClosed(0, bucketsCount)
                 .forEach(bucketNumber -> {
-                    virtualToRealNode.remove(hash((nodeName + bucketNumber)));
+                    virtualToRealNode.remove(virtualNode(nodeName, bucketNumber));
                 });
+    }
+
+    private long virtualNode(String nodeName, int bucketNumber) {
+        return hash(virtualNodeName(nodeName, bucketNumber));
+    }
+
+    private String readNode(long virtualNode){
+        return virtualToRealNode.get(virtualNode).first();
     }
 
     private long hash(String key){
@@ -59,7 +71,7 @@ public class ConsistentHash {
         if (!tailMap.isEmpty()){
             virtualNode = tailMap.firstKey();
         }
-        return virtualToRealNode.get(virtualNode).first();
+        return readNode(virtualNode);
     }
 
 }

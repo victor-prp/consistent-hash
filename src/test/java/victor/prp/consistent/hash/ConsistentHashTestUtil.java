@@ -110,14 +110,19 @@ public class ConsistentHashTestUtil {
 
 
 
+    public  static Set<String> initNodesSequentially(int nodesCount) {
+        final String nodePrototype = "node-";
+        return IntStream.rangeClosed(1,nodesCount)
+                    .mapToObj(sequence -> nodePrototype + sequence)
+                    .collect(Collectors.toSet());
+    }
+
     public  static Set<String> initNodesRandomly(int nodesCount) {
         final String nodePrototype = "node-";
-        final Set<String>result = new HashSet<>();
         final Random random = new Random();
-        IntStream.rangeClosed(1,nodesCount)
-                .map(n -> random.nextInt())
-                .forEach(sequence -> result.add(nodePrototype+sequence));
-        return result;
+        return IntStream.rangeClosed(1,nodesCount)
+                    .mapToObj(sequence -> nodePrototype + random.nextInt())
+                    .collect(Collectors.toSet());
     }
 
     public  static ConsistentHash initConsistentHash(int bucketCount, Set<String> nodes){
