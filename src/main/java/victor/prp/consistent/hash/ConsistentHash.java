@@ -10,7 +10,7 @@ import static java.util.stream.IntStream.rangeClosed;
  */
 public class ConsistentHash {
     private int bucketsCount;
-    private SortedMap<Long,String> virtualToRealNode = new TreeMap<>();
+    private SortedMap<Long,SortedSet<String>> virtualToRealNode = new TreeMap<>();
     private HashFunction hashFunction = MD5Hash.INSTANCE;
 
     public ConsistentHash(int bucketsCount, String... nodes) {
@@ -27,8 +27,14 @@ public class ConsistentHash {
         AtomicInteger collisionsCount = new AtomicInteger();
         rangeClosed(0, bucketsCount)
                 .forEach(bucketNumber -> {
-                    String previousMapping = virtualToRealNode.put(hash((nodeName + bucketNumber)), nodeName);
-                    if (previousMapping != null){
+                    long hash = hash((nodeName + bucketNumber));
+                    SortedSet<String> previousMapping = virtualToRealNode.get(hash);
+                    if (previousMapping == null){
+                        SortedSet<String> newMapping = new TreeSet<>();
+                        newMapping.add(nodeName);
+                        virtualToRealNode.put(hash,newMapping);
+                    }else{
+                        previousMapping.add(nodeName);
                         collisionsCount.incrementAndGet();
                     }
                 });
@@ -49,11 +55,11 @@ public class ConsistentHash {
     public String calculateNode(String key){
         long hash = hash(key);
         long virtualNode = virtualToRealNode.firstKey();
-        SortedMap<Long,String> tailMap = virtualToRealNode.tailMap(hash);
+        SortedMap<Long,SortedSet<String>> tailMap = virtualToRealNode.tailMap(hash);
         if (!tailMap.isEmpty()){
             virtualNode = tailMap.firstKey();
         }
-        return virtualToRealNode.get(virtualNode);
+        return virtualToRealNode.get(virtualNode).first();
     }
 
 }

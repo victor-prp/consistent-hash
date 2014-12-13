@@ -16,7 +16,7 @@ import static victor.prp.consistent.hash.ConsistentHashTestUtil.*;
 public class ValidateFromGeneratedInputTest {
     private static final int MIN_EXPECTED_COLLISIONS = 30;
 
-    private static final String FILE_NAME = "victor/prp/consistent/hash/node2Keys-00.xml";
+    private static final String CLASSPATH_FILE_NAME = "victor/prp/consistent/hash/node2Keys-00.xml";
     private static final int NODES_COUNT = 100;
     private static final int BUCKETS_COUNT = 10000;
     private static final int KEYS_COUNT = 1000000;
@@ -24,7 +24,7 @@ public class ValidateFromGeneratedInputTest {
     @Test
     public void validateSameOutput() {
 
-        URL fileUrl = ConsistentInputOutputTest.class.getClassLoader().getResource(FILE_NAME);
+        URL fileUrl = ConsistentInputOutputTest.class.getClassLoader().getResource(CLASSPATH_FILE_NAME);
         File node2Keys00 = new File(fileUrl.getFile());
         Nodes2Keys nodes2KeysFromFile= JaxbUtil.unmarshal(node2Keys00,Nodes2Keys.class);
 
@@ -42,7 +42,7 @@ public class ValidateFromGeneratedInputTest {
 
 
     /**
-     * Run it in order to generate the input according to current algorithm impl
+     * Run it in order to generate the input according to the current algorithm impl
      */
     public static void main(String... args) {
         generateInput();
@@ -51,11 +51,11 @@ public class ValidateFromGeneratedInputTest {
     private static void generateInput() {
         final Set<String> keys = createRandomKeys(KEYS_COUNT);
         final Set<String> nodes = initNodesRandomly(NODES_COUNT);
-        ConsistentHash consistentHash = initConsistentHash(BUCKETS_COUNT, nodes,MIN_EXPECTED_COLLISIONS);
+        ConsistentHash consistentHash = initConsistentHash(BUCKETS_COUNT, nodes, MIN_EXPECTED_COLLISIONS);
         Map<String, Set<String>> node2Keys = simulate(consistentHash, nodes, keys);
-        URL fileUrl = ConsistentInputOutputTest.class.getClassLoader().getResource(FILE_NAME);
         Nodes2Keys nodes2KeysForJaxb = new Nodes2Keys(node2Keys);
-        File node2Keys00 = new File(fileUrl.getFile());
+        FileNameBuilder node2Keys00FileNameBuilder = new FileNameBuilder(System.getProperty("user.dir"),"src/test/resources", CLASSPATH_FILE_NAME);
+        File node2Keys00 = new File(node2Keys00FileNameBuilder.toString());
         JaxbUtil.marshal(nodes2KeysForJaxb, node2Keys00);
     }
 
