@@ -29,11 +29,11 @@ public class ConsistentHash {
                 .forEach(bucketNumber -> {
                     long hash = virtualNode(nodeName, bucketNumber);
                     SortedSet<String> previousMapping = virtualToRealNode.get(hash);
-                    if (previousMapping == null){
+                    if (previousMapping == null) {
                         SortedSet<String> newMapping = new TreeSet<>();
                         newMapping.add(nodeName);
-                        virtualToRealNode.put(hash,newMapping);
-                    }else{
+                        virtualToRealNode.put(hash, newMapping);
+                    } else {
                         previousMapping.add(nodeName);
                         collisionsCount.incrementAndGet();
                     }
@@ -72,6 +72,26 @@ public class ConsistentHash {
             virtualNode = tailMap.firstKey();
         }
         return readNode(virtualNode);
+    }
+
+
+    /**
+     * the sum of all distances mapped from a key is the weight of this key
+     * @return key -> weight
+     */
+    public Map<String,Long> distribution(){
+        Map<String,Long> result = new HashMap<>();
+        long prev = 0;
+        for (Map.Entry<Long,SortedSet<String>> entry:virtualToRealNode.entrySet()){
+            long val = entry.getKey();
+            long currDist = val - prev;
+            String key = entry.getValue().first();
+            long prevDist = Optional.ofNullable(result.get(key)).orElse(0L);
+            long newDist = currDist + prevDist;
+            result.put(key,newDist);
+        }
+        return result;
+
     }
 
 }

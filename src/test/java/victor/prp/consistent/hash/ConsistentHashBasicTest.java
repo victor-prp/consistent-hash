@@ -5,14 +5,44 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author victorp
  */
 public class ConsistentHashBasicTest {
-    private static final int NODES_COUNT = 10;
+    private static final int NODES_COUNT = 100;
     private static final int BUCKETS_COUNT =  10000;
     private static final int KEYS_COUNT = 1000000;
+
+    @Test
+    public void validateDistributionByDefinition(){
+        final Set<String> nodes = initNodesRandomly(NODES_COUNT);
+        ConsistentHash consistentHash = initConsistentHash(BUCKETS_COUNT, nodes);
+        Map<String,Long> distribution =   consistentHash.distribution();
+
+        List<Double> deviations = deviations(distribution.values());
+        System.out.println("sorted deviations: "+deviations);
+
+    }
+
+    private List<Double> deviations(Collection<Long> distribution) {
+        long sum = distribution.stream().reduce(0L,(prev,curr)-> prev+curr);
+        long avg = sum/NODES_COUNT;
+        List<Long> sorted = distribution.stream().sorted().collect(Collectors.toList());
+
+        return sorted.stream()
+                .map(weight -> deviation(weight,avg))
+                .sorted()
+                .collect(Collectors.toList());
+    }
+
+    private double deviation(long weight, long avgWeight){
+        long absDeviation = Math.abs(weight - avgWeight);
+        double deviation = ((double)absDeviation/(double)avgWeight)*100;
+        return deviation;
+    }
+
 
     @Test
     public void validateDistribution(){
@@ -20,10 +50,20 @@ public class ConsistentHashBasicTest {
 
         final Set<String> keys = createRandomKeys(KEYS_COUNT);
         final Set<String> nodes = initNodesRandomly(NODES_COUNT);
-        ConsistentHash consistentHash = initConsistentHash(BUCKETS_COUNT,nodes);
+        ConsistentHash consistentHash = initConsistentHash(BUCKETS_COUNT, nodes);
 
 
-        Map<String,Set<String>> node2Keys = simulate(consistentHash,nodes,keys);
+        List<Double> deviations = deviations(consistentHash.distribution().values());
+        System.out.println("Defined deviations: "+deviations);
+
+        Map<String,Set<String>> node2Keys = simulate(consistentHash, nodes,keys);
+
+        List<Long> actualDistribution = node2Keys.values().stream()
+                .map(k -> (long)k.size())
+                .collect(Collectors.toList());
+        List<Double> actualDeviations = deviations(actualDistribution);
+        System.out.println("Actual deviations: "+actualDeviations);
+
 
         int expectedCountPerNode = KEYS_COUNT / NODES_COUNT;
         node2Keys.forEach((node, keysSet) -> {
