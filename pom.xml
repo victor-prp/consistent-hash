@@ -8,12 +8,29 @@
     <artifactId>consistent-hash</artifactId>
     <version>0.0.0.0-SNAPSHOT</version>
 
+    <properties>
+        <jersey.version>1.18</jersey.version>
+    </properties>
 
     <dependencies>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.11</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.sun.jersey</groupId>
+            <artifactId>jersey-json</artifactId>
+            <version>${jersey.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.sun.jersey</groupId>
+            <artifactId>jersey-client</artifactId>
+            <version>${jersey.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
